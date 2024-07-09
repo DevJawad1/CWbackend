@@ -5,11 +5,13 @@ const registerUser = (req, res) => {
     const { firstName, lastName, phone, email, password } = req.body;
     allUser.findOne({ email }).then((userByEmail) => {
       if (userByEmail) {
-        res.status(400).json({ message: "Email already exists" });
+        console.log(userByEmail);
+        res.status(200).json({ message: "Email already exists" });
       } else {
         allUser.findOne({ phone }).then((userByPhone) => {
           if (userByPhone) {
-            res.status(400).json({ message: "Phone number already exists" });
+            console.log(userByPhone);
+            res.status(200).json({ message: "Phone number already exists" });
           } else {
             let newUser = new allUser({ firstName, lastName, phone, email, password, membership:false, type:"none" });
             newUser.save()
@@ -33,4 +35,20 @@ const registerUser = (req, res) => {
     });
   };
   
-module.exports = {registerUser}
+  const loginMember= async(req, res)=>{
+    const {email, password} = req.body
+    let user = await allUser.findOne({email})
+    if(user){
+        let validPassword = await user.comparePassword(password)
+        if(validPassword){
+          console.log('User found');
+          // let token = jwt.sign({ email }, SECRET, { expiresIn: "1h" })
+          res.send({ status: true, message: "User found", details: user, });
+        }else{
+          res.send({message:"Invalid password", status:false})
+        }
+    }else{
+      res.send({message:"User not found", status:false})
+    }
+  }
+module.exports = {registerUser, loginMember}

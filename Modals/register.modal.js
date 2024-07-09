@@ -4,7 +4,7 @@ const memberSchema =  mongoose.Schema({
     firstName:String,
     lastName:String,
     email:String,
-    phoneNo:String,
+    phone:String,
     membership:Boolean,
     type:String,
     password:String,
@@ -23,5 +23,15 @@ memberSchema.pre("save", function(next){
         })
     }
 })
+
+memberSchema.methods.comparePassword=async function(userPassword){
+    try {
+      const user = await bcrypt.compare(userPassword, this.password);
+      return user;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+    }
 let allUser = mongoose.model("member", memberSchema)
 module.exports = allUser
