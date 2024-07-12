@@ -37,6 +37,7 @@ const registerUser = (req, res) => {
   
   const loginMember= async(req, res)=>{
     const {email, password} = req.body
+    console.log(password);
     let user = await allUser.findOne({email})
     if(user){
         let validPassword = await user.comparePassword(password)

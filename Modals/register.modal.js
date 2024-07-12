@@ -8,6 +8,7 @@ const memberSchema =  mongoose.Schema({
     membership:Boolean,
     type:String,
     password:String,
+    vip:Boolean
 })
 
 memberSchema.pre("save", function(next){
