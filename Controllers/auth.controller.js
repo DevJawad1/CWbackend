@@ -44,7 +44,7 @@ const registerUser = (req, res) => {
         if(validPassword){
           console.log('User found');
           // let token = jwt.sign({ email }, SECRET, { expiresIn: "1h" })
-          res.send({ status: true, message: "User found", details: user, });
+          res.send({ status: true, message: "User found", loggedInUser:user._id });
         }else{
           res.send({message:"Invalid password", status:false})
         }
