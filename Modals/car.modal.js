@@ -1,7 +1,13 @@
 const mongoose = require ('mongoose')
 
 const carSchema=mongoose.Schema({
-    name:String,
     image:String,
-    owner:String
+    name:String,
+    plateNum:String,
+    color:String,
+    location:String,
+    owner:String,
 })
+
+let carModel = mongoose.model("allCar", carSchema)
+module.exports = carModel
