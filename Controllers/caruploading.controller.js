@@ -10,28 +10,6 @@ const storage = multer.memoryStorage();
 // const upload = multer({ storage: storage });
 const upload = multer({ dest: 'uploads/' });
 
-const duplicateAndSaveToCloudinary=async(uploadedfile)=>{
-    try {
-        // Upload the original image to Cloudinary
-        const originalResult = await cloudinary.uploader.upload(uploadedfile);
-    
-        // Generate a unique public ID for the duplicate image  
-        const duplicatePublicId = `${originalResult.public_id}_duplicate`;
-    
-        // Upload the duplicate image to Cloudinary
-        const duplicateResult = await cloudinary.uploader.upload(uploadedfile, {
-          public_id: duplicatePublicId
-        });
-    
-        return {
-          originalImageUrl: originalResult.secure_url,
-          duplicateImageUrl: duplicateResult.secure_url
-        };
-      } catch (error) {
-        console.error('Error:', error);
-        throw error;
-      }
-}
 
 const uploadToCloudinary = async (filePath) => {
   try {
