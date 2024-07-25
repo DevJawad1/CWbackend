@@ -83,5 +83,9 @@ const uploadToCloudinary = async (filePath) => {
     }
   };
   
-module.exports = { registerCar, saveCarImg };
+
+  const userCars= async(req, res)=>{
+
+  }
+module.exports = { registerCar, saveCarImg, userCars };
                                                                                                                                   
