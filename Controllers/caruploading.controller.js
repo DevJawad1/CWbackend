@@ -90,7 +90,7 @@ const uploadToCloudinary = async (filePath) => {
     let myCar= await allCar.find({owner:user})
     console.log(myCar);
 
-    // res.send(myCar.length)
+    res.send({status:myCar.length>0?true:false, myCar})
   }
 module.exports = { registerCar, saveCarImg, userCars };
                                                                                                                                   
