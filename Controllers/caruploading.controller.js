@@ -5,10 +5,10 @@ cloudinary.config({
   api_key: process.env.API_KEY,
   api_secret: process.env.API_SECRET,
 });
-const multer = require('multer');
-const storage = multer.memoryStorage();
-// const upload = multer({ storage: storage });
-const upload = multer({ dest: 'uploads/' });
+// const multer = require('multer');
+// const storage = multer.memoryStorage();
+// // const upload = multer({ storage: storage });
+// const upload = multer({ dest: 'uploads/' });
 
 
 const uploadToCloudinary = async (filePath) => {
