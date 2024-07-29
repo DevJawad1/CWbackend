@@ -11,7 +11,7 @@ const sendMessageToEmail = (content, mail, title) => {
     var mailOptions = {
       from: process.env.USER_EMAIL,
       to: mail,
-      subject: 'iMARKET ' + title,
+      subject: 'Auto wash',
       html: content
     };
     // transport

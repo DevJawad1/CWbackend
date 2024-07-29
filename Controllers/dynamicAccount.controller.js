@@ -81,7 +81,7 @@ const createFlw = async (req, res) => {
             .then((accountSaved)=>{
                 if(accountSaved){
                     res.send({ message: "Account created Successfully", bank });
-                    const html= '<div style="box-shadow: 1px 1px 2px 2px #0e46a139; margin: 20px; padding: 30px; border-radius: 5px;"><h5 style="border-bottom: 1px solid gray;">Payment Notification</h5><h6 style="font-size: 18px;">This user, <span style="color: green; font-size: 20px;">Jawad</span> make a payment of <br /><span style="color: green; font-size: 22px;">₦ 100</span> <br />This user is now an eligible member with grade C</h6><button style="border: none; background-color: #0E47A1; color: white; border-radius: 5px; padding: 10px;">View payment</button></div>'
+                    const html= '<div style="box-shadow: 1px 1px 2px 2px #0e46a139; margin: 20px; padding: 10px; border-radius: 5px;"><h5 style="border-bottom: 1px solid gray;">Payment Notification</h5><h6 style="font-size: 18px;">This user, <span style="color: green; font-size: 20px;">'+user.firstName+' '+user.lastName+'</span> make a payment of <br /><span style="color: green; font-size: 22px;">₦ 100</span> <br />This user is now an eligible member with grade C</h6><button style="border: none; background-color: #0E47A1; color: white; border-radius: 5px; padding: 10px;">View payment</button></div>'
                     // sendMessageToEmail()
                     sendMessageToEmail( html, user.email, 'Payment Notification')
                 }else{
