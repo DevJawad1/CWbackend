@@ -72,15 +72,23 @@ const createFlw = async (req, res) => {
                 tx_ref: randomNum,
                 cAt: collectAmount,
             };
-
-            user.uniqueAccNo = account_number;
-            const updatedUser = await user.save();
-
-            if (updatedUser) {
-                res.send({ message: "Account created Successfully", bank });
-            } else {
-                res.send({ message: "Account not created" });
-            }
+            
+            registerSchema.findOneAndUpdate(
+                {_id:userid},
+                {$set: {uniqueAccNo: account_number}},
+                {new:true}
+            )
+            .then((accountSaved)=>{
+                if(accountSaved){
+                    res.send({ message: "Account created Successfully", bank });
+                }else{
+                    res.send({ message: "Account not created" });
+                }
+            })
+            .catch(err=>{
+                console.log(err);
+            })
+            
         }
     } catch (err) {
         console.error(err);
