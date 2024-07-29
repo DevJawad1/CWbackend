@@ -13,7 +13,7 @@ const registerUser = (req, res) => {
             console.log(userByPhone);
             res.status(200).json({ message: "Phone number already exists" });
           } else {
-            let newUser = new allUser({ firstName, lastName, phone, email, password, membership:false, type:"none" });
+            let newUser = new allUser({ firstName, lastName, phone, email, password, membership:false, type:"none",uniqueAccNo:'null' });
             newUser.save()
               .then(() => {
                 console.log('Successfully signed up:', newUser);

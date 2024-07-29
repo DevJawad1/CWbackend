@@ -9,7 +9,7 @@ const memberSchema =  mongoose.Schema({
     type:String,
     password:String,
     vip:Boolean,
-    uniqueAccNo:Number
+    uniqueAccNo:String
 })
 
 memberSchema.pre("save", function(next){
