@@ -26,20 +26,19 @@ const createFlw = async (req, res) => {
         };
 
         let randomNum = generateRandomNumber(30);
-        const checkTxf = await collectedWebHookModel.find();
-
         let collectRef; // Declare collectRef outside the loop
+        const checkTxf = await collectedWebHookModel.find().select('+transactionDetails');
         checkTxf.forEach((transaction) => {
-        
-            const transactionRef = transaction.transactionDetails.data.tx_ref;
-            if (transactionRef === randomNum) {
-                collectRef = transactionRef;
+            if (transaction.transactionDetails && transaction.transactionDetails.data) {
+                const transactionRef = transaction.transactionDetails.data.tx_ref;
+                if (transactionRef === randomNum) {
+                    // regenrate random number
+                    randomNum = generateRandomNumber(30);
+                }
+            } else {
+                console.warn("Missing transaction details or data for transaction:", transaction);
             }
         });
-
-        if (collectRef !== undefined) {
-            randomNum = generateRandomNumber(30);
-        } else {
             const payload = {
                 email: user.email,
                 is_permanent: false,
@@ -98,10 +97,6 @@ const createFlw = async (req, res) => {
                 return res.status(500).json({ error: "Failed to create virtual account. Please try again later." });
             }
             // const { bank_name, account_number, created_at, expiry_date } = response.data;
-
-            
-            
-        }
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "An error occurred" });
@@ -127,7 +122,7 @@ const WebHook = async (req, res) => {
         const transaction = new collectedWebHookModel({
             transactionDetails: eventData,
         });
-        
+
         transaction.save().then((result)=>{
             res.status(200).send({ message: "Webhook data saved successfully", status: true });
         }).catch((err)=>{
@@ -139,5 +134,45 @@ const WebHook = async (req, res) => {
     }
 };
 
+
+const verifyUserpayment = async (req, res) => {
+    const { tx_ref } = req.body;
+    console.log(tx_ref);
+
+    try {
+        const webhooks = await collectedWebHookModel.find().select('+transactionDetails');
+        let paymentConfirmed = false;
+
+        for (const eachwebhook of webhooks) {
+            const data = eachwebhook.transactionDetails?.data;
+            if (data && data.tx_ref === tx_ref) {
+                const payer = data.customer.email;
+                const amount = data.amount;
+                paymentConfirmed = true;
+
+                const userUpdate = await registerSchema.findOneAndUpdate(
+                    { email: payer },
+                    { $set: { membership: true, type: amount === 100 ? "third" : amount === 500 ? "second" : "first" } },
+                    { new: true } // Ensure you return the updated document
+                );
+
+                if (userUpdate) {
+                    return res.send({ msg: `Payment confirmed, You are now a ${userUpdate.type} class member`, status: true });
+                } else {
+                    return res.send({ msg: "Payment confirmed, we are working on your membership", status: true });
+                }
+            }
+        }
+
+        if (!paymentConfirmed) {
+            res.send({ msg: "We are yet to receive your payment, don't leave this page", status: false });
+        }
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "An error occurred while verifying payment" });
+    }
+};
+
   
-module.exports = { createFlw, WebHook };
+module.exports = { createFlw, WebHook, verifyUserpayment  };
