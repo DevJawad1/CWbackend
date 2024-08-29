@@ -101,6 +101,19 @@ const createFlw = async (req, res) => {
 
 const WebHook = async (req, res) => {
     try {
+        console.log('Request Headers:', req.headers);
+        console.log('Request Body:', req.body);
+
+        function isEmpty(obj) {
+            return Object.keys(obj).length === 0;
+        }
+
+        if (isEmpty(req.body)) {
+            console.warn('Empty webhook data received');
+            return res.status(400).send({ message: "Webhook data is empty" });
+        }
+
+        // Process the webhook data
         const eventData = req.body;
         const transaction = new collectedWebHookModel({
             transactionDetails: eventData,
@@ -109,11 +122,10 @@ const WebHook = async (req, res) => {
         await transaction.save();
         res.status(200).send({ message: "Webhook data saved successfully", status: true });
     } catch (error) {
-        console.error("Error saving webhook data:", error);
-        res.status(500).send({ message: "Error saving webhook data", status: false });
+        console.error("Error processing webhook data:", error.message);
+        res.status(500).send({ message: "Error processing webhook data", status: false });
     }
 };
 
-
-    
+  
 module.exports = { createFlw, WebHook };
