@@ -152,7 +152,7 @@ const verifyUserpayment = async (req, res) => {
 
                 const userUpdate = await registerSchema.findOneAndUpdate(
                     { email: payer },
-                    { $set: { membership: true, type: amount === 100 ? "third" : amount === 500 ? "second" : "first" } },
+                    { $set: { membership: true, type: amount === 10000 ? "third" : amount === 500 ? "second" : "first" } },
                     { new: true } // Ensure you return the updated document
                 );
 
