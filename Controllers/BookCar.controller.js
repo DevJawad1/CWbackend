@@ -17,7 +17,7 @@ const saveBookCar = (req, res)=>{
         return savecar.save();
     })
 
-    
+
     Promise.all(promises)
     .then((savedCars) => {
         console.log(savedCars);
@@ -28,3 +28,5 @@ const saveBookCar = (req, res)=>{
         res.send({msg: "Oops, something went wrong. Try again in a few minutes.", status: false});
     });
 }
+
+module.exports = {saveBookCar}
