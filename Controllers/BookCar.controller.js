@@ -21,7 +21,7 @@ const saveBookCar = (req, res)=>{
     Promise.all(promises)
     .then((savedCars) => {
         console.log(savedCars);
-        res.send({msg: `Your car${allcars.length > 1 ? 's' : ''} have been booked successfully`,status: true });
+        res.send({msg: `Your car${allcars.length > 1 ? 's' : ''} have been booked successfully, we are going to pick them up`,status: true });
     })
     .catch((err) => {
         console.log('Error while saving book car', err);
