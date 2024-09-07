@@ -8,7 +8,7 @@ const createFlw = async (req, res) => {
         process.env.FLW_SECRET_KEY
     );
 
-    const { userid, collectAmount } = req.body;
+    const { userid, collectAmount, planType } = req.body;
     try {
         const user = await registerSchema.findOne({ _id: userid })
         if (!user) {
@@ -72,6 +72,7 @@ const createFlw = async (req, res) => {
                     expire_date: formatDateTime(expiry_date),
                     tx_ref: randomNum,
                     cAt: collectAmount,
+                    type:user.type=="none"?"Get plan":user.type=="third" && collectAmount>100?"Upgrade plan":user.type=="second" && collectAmount>500?"Upgrad plan":"Renew plan"
                 };
                 
                 registerSchema.findOneAndUpdate(
