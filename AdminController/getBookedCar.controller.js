@@ -6,3 +6,5 @@ const allBookedCar= async(req, res)=>{
     console.log(allBookedCarOwner)
 
 }
+
+module.exports = {allBookedCar}
