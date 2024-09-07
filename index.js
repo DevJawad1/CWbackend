@@ -4,6 +4,7 @@ const cors = require('cors')
 const app = express()
 const env = require('dotenv').config()
 const userRouter = require ('./Routers/user.router')
+const adminRouter = require('./AdminRoute/admin.router')
 PORT = process.env.PORT
 URI=process.env.URI
 
@@ -20,6 +21,7 @@ app.use(express.urlencoded({extended:true, limit: '50mb'}))
 app.use(express.json({ limit: '50mb' }));
 app.use(express.json());
 app.use('/member', userRouter)
+app.use('/admin', adminRouter)
 app.use(express.static("public"))
 // listen
 app.listen(PORT, ()=>{

@@ -152,8 +152,8 @@ const verifyUserpayment = async (req, res) => {
 
                 const userUpdate = await registerSchema.findOneAndUpdate(
                     { email: payer },
-                    { $set: { membership: true, type: amount === 10000 ? "third" : amount === 500 ? "second" : "first" } },
-                    { new: true } // Ensure you return the updated document
+                    { $set: { membership: true, type: amount === 100 ? "third" : amount === 500 ? "second" : "first" } },
+                    { new: true } 
                 );
 
                 if (userUpdate) {
@@ -165,7 +165,7 @@ const verifyUserpayment = async (req, res) => {
         }
 
         if (!paymentConfirmed) {
-            res.send({ msg: "We are yet to receive your payment, don't leave this page", status: false });
+            res.send({ msg: "We are yet to receive your payment, click after some minutes", status: false });
         }
 
     } catch (err) {
