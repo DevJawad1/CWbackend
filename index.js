@@ -25,5 +25,5 @@ app.use('/admin', adminRouter)
 app.use(express.static("public"))
 // listen
 app.listen(PORT, ()=>{
-    console.log("listen to 4000");
+    console.log("listen to ", PORT);
 })
