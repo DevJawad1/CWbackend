@@ -5,7 +5,7 @@ const saveBookCar = async(req, res)=>{
 
     const findUser = await userDB.findOne({_id:user})
     if(findUser.type=="none"){
-        res.send({msg:"You are not a membeship yet", status:false})
+        res.send({msg:"You are not a membeship yet, Go and get one", status:false})
     }else{
         const promises = allcars.map((car, i)=>{
             let carObj = {
