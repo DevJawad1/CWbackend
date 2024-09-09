@@ -122,6 +122,8 @@ const WebHook = async (req, res) => {
         const eventData = req.body;
         const transaction = new collectedWebHookModel({
             transactionDetails: eventData,
+            resolve:false,
+            email:eventData.data.customer.email
         });
 
         transaction.save().then((result) => {
@@ -137,7 +139,7 @@ const WebHook = async (req, res) => {
 
 
 const verifyUserpayment = async (req, res) => {
-    const { tx_ref } = req.body;
+    const { tx_ref, userid } = req.body;
     console.log(tx_ref);
 
     try {
@@ -152,6 +154,8 @@ const verifyUserpayment = async (req, res) => {
                 const amount = data.amount;
                 paymentConfirmed = true;
 
+
+                const user = await registerSchema.findOne({_id:userid})
                 let eventType = "Renew plan";
                 if (user) {
                     if (user.type === "none") {
@@ -164,6 +168,7 @@ const verifyUserpayment = async (req, res) => {
                 }
 
                 eachwebhook.transactionDetails.event.type = eventType;
+                eachwebhook.resolve=true
                 await eachwebhook.save();
 
 
@@ -191,7 +196,11 @@ const verifyUserpayment = async (req, res) => {
     }
 };
 
-const userPayment=()=>{
+const userPayment=async(req, res)=>{
+    const {userId} =  req.body
+
+    const user = await registerSchema.findOne({_id:userId})
+    const email = user.email
 }
 
 module.exports = { createFlw, WebHook, verifyUserpayment };

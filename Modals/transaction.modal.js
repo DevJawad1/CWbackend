@@ -7,6 +7,8 @@ const collectWebhook = new mongoose.Schema({
     select: false,
     confirmation: false,
   },
+  resolve:Boolean,
+  email:String  
 });
 
 const collectedWebHookModel = mongoose.model("webHook", collectWebhook);
