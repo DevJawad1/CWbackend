@@ -149,7 +149,7 @@ const verifyUserpayment = async (req, res) => {
 
         for (const eachwebhook of webhooks) {
             const data = eachwebhook.transactionDetails?.data;
-
+            
             if (data && data.tx_ref === tx_ref) {
                 const payer = data.customer.email;
                 const amount = data.amount;
