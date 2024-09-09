@@ -123,7 +123,8 @@ const WebHook = async (req, res) => {
         const transaction = new collectedWebHookModel({
             transactionDetails: eventData,
             resolve:false,
-            email:eventData.data.customer.email
+            email:eventData.data.customer.email,
+            paymentType:"none"
         });
 
         transaction.save().then((result) => {
@@ -155,7 +156,7 @@ const verifyUserpayment = async (req, res) => {
                 paymentConfirmed = true;
 
 
-                const user = await registerSchema.findOne({_id:userid})
+                const user = await registerSchema.findOne({email:eachwebhook.email})
                 let eventType = "Renew plan";
                 if (user) {
                     if (user.type === "none") {
@@ -167,11 +168,9 @@ const verifyUserpayment = async (req, res) => {
                     }
                 }
 
-                eachwebhook.transactionDetails.event.type = eventType;
+                eachwebhook.paymentType = eventType;
                 eachwebhook.resolve=true
                 await eachwebhook.save();
-
-
                 const userUpdate = await registerSchema.findOneAndUpdate(
                     { email: payer },
                     { $set: { membership: true, type: amount === 100 ? "third" : amount === 500 ? "second" : "first" } },
