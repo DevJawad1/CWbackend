@@ -3,7 +3,7 @@ const express = require('express')
 const {registerUser, loginMember} = require('../Controllers/auth.controller')
 const {userDetails} = require('../Controllers/dashboard.controller')
 const {registerCar, saveCarImg, userCars}= require('../Controllers/caruploading.controller')
-const {createFlw, WebHook, verifyUserpayment} = require('../Controllers/dynamicAccount.controller')
+const {createFlw, WebHook, verifyUserpayment} = require('../Controllers/payment.controller')
 const {saveBookCar} = require('../Controllers/BookCar.controller')
 // Configure multer for file upload, using /tmp directory
 const storage = multer.diskStorage({
