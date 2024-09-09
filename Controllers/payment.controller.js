@@ -149,7 +149,7 @@ const verifyUserpayment = async (req, res) => {
 
         for (const eachwebhook of webhooks) {
             const data = eachwebhook.transactionDetails?.data;
-            
+
             if (data && data.tx_ref === tx_ref) {
                 const payer = data.customer.email;
                 const amount = data.amount;
@@ -200,6 +200,14 @@ const userPayment=async(req, res)=>{
 
     const user = await registerSchema.findOne({_id:userId})
     const email = user.email
+
+    const UserPayment = await collectedWebHookModel.find({email:email}).select('+transactionDetails')
+
+    if(UserPayment.length>0){
+        res.send({status:true, paymentHistory:UserPayment})
+    }else{
+        res.send({status:false, paymentHistory:[]})
+    }
 }
 
-module.exports = { createFlw, WebHook, verifyUserpayment };
+module.exports = { createFlw, WebHook, verifyUserpayment, userPayment };
