@@ -24,6 +24,10 @@ app.use('/member', userRouter)
 app.use('/admin', adminRouter)
 app.use(express.static("public"))
 // listen
+
+app.get('/server-date', (req, res) => {
+    res.json({ serverDate: new Date().toISOString().split('T')[0] });
+});
 app.listen(PORT, ()=>{
     console.log("listen to ", PORT);
 })

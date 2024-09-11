@@ -121,7 +121,7 @@ const WebHook = async (req, res) => {
         // Process the webhook data
         const eventData = req.body;
         const dueDate = (realDate) => {
-            let date = new Date("2024-09-09");
+            let date = new Date(realDate);
             date.setDate(date.getDate() + 30);
             let formattedDate = date.toISOString().split('T')[0];
             return formattedDate
@@ -131,7 +131,8 @@ const WebHook = async (req, res) => {
             resolve:false,
             email:eventData.data.customer.email,
             paymentType:"none",
-            dueDate: dueDate(eventData.data.created_at.slice(0, 10))
+            dueDate: dueDate(eventData.data.created_at.slice(0, 10)),
+            currently:true
         });
 
         transaction.save().then((result) => {
