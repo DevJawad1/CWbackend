@@ -52,4 +52,5 @@ const registerUser = (req, res) => {
       res.send({message:"User not found", status:false})
     }
   }
+
 module.exports = {registerUser, loginMember}

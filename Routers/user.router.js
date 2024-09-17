@@ -5,6 +5,8 @@ const {userDetails} = require('../Controllers/dashboard.controller')
 const {registerCar, saveCarImg, userCars}= require('../Controllers/caruploading.controller')
 const {createFlw, WebHook, verifyUserpayment, userPayment} = require('../Controllers/payment.controller')
 const {saveBookCar} = require('../Controllers/BookCar.controller')
+
+const {codeHandler} = require('../Controllers/resetpassword.controller')
 // Configure multer for file upload, using /tmp directory
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -31,6 +33,9 @@ router.post('/virtualaccount', createFlw)
 router.post('/webhook', WebHook)
 router.post('/verifyPayment', verifyUserpayment)
 router.post('/userPayment', userPayment)
+
+router.post('/sendcode', codeHandler)
+
 
 
 module.exports = router
