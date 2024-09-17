@@ -10,6 +10,7 @@ const collectWebhook = new mongoose.Schema({
   resolve:Boolean,
   email:String,
   paymentType:String,
+  dueDate:String,
   currently:Boolean,
 });
 

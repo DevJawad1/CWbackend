@@ -151,22 +151,20 @@ const verifyUserpayment = async (req, res) => {
     const { tx_ref, userid } = req.body;
     console.log(tx_ref);
 
-    const user = await registerSchema.findOne({_id:userid})
-    const usermail = user.email
     try {
-        const webhooks = await collectedWebHookModel.find({email:usermail}).select('+transactionDetails');
+        const webhooks = await collectedWebHookModel.find().select('+transactionDetails');
         let paymentConfirmed = false;
 
         for (const eachwebhook of webhooks) {
             const data = eachwebhook.transactionDetails?.data;
             eachwebhook.currently = false;
+
             if (data && data.tx_ref === tx_ref) {
                 const payer = data.customer.email;
                 const amount = data.amount;
                 paymentConfirmed = true;
 
-
-                const user = await registerSchema.findOne({email:eachwebhook.email})
+                const user = await registerSchema.findOne({ email: eachwebhook.email });
                 let eventType = "Renew plan";
                 if (user) {
                     if (user.type === "none") {
@@ -179,8 +177,8 @@ const verifyUserpayment = async (req, res) => {
                 }
 
                 eachwebhook.paymentType = eventType;
-                eachwebhook.resolve=true
-                eachwebhook.currently=true
+                eachwebhook.resolve = true;
+                eachwebhook.currently = true;  // Set 'currently' to true for the matching webhook
                 await eachwebhook.save();
 
                 const userUpdate = await registerSchema.findOneAndUpdate(
@@ -195,6 +193,8 @@ const verifyUserpayment = async (req, res) => {
                     return res.send({ msg: "Payment confirmed, we are working on your membership", status: true });
                 }
             }
+
+            await eachwebhook.save();
         }
 
         if (!paymentConfirmed) {
@@ -206,6 +206,7 @@ const verifyUserpayment = async (req, res) => {
         res.status(500).json({ error: "An error occurred while verifying payment" });
     }
 };
+
 
 const userPayment=async(req, res)=>{
     const {userId} =  req.body
