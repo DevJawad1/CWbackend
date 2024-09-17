@@ -75,7 +75,7 @@ const newPassword = async(req, res)=>{
         user.password=ps1
         user.save().then((newuser)=>{
             if(newuser){
-                res.send({msg:"Password change successfully", status:true})
+                res.send({msg:"Password change successfully. Login now", status:true})
             }
         }).catch((err)=>{
             res.send({msg:"Error while reseting password", status:false})
