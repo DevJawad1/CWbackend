@@ -9,100 +9,110 @@ const createFlw = async (req, res) => {
     );
 
     const { userid, collectAmount, planType } = req.body;
+
     try {
-        const user = await registerSchema.findOne({ _id: userid })
+        const user = await registerSchema.findOne({ _id: userid });
         if (!user) {
             return res.json({ message: "User not found!" });
         }
 
-        const generateRandomNumber = (length) => {
-            let randomNumber = "";
-            const numbers = "0123456789";
-            for (let i = 0; i < length; i++) {
-                const randomIndex = Math.floor(Math.random() * numbers.length);
-                randomNumber += numbers[randomIndex];
-            }
-            return randomNumber;
-        };
+        const generateAcc = async () => {
+            const generateRandomNumber = (length) => {
+                let randomNumber = "";
+                const numbers = "0123456789";
+                for (let i = 0; i < length; i++) {
+                    const randomIndex = Math.floor(Math.random() * numbers.length);
+                    randomNumber += numbers[randomIndex];
+                }
+                return randomNumber;
+            };
 
-        let randomNum = generateRandomNumber(30);
-        let collectRef; // Declare collectRef outside the loop
-        const checkTxf = await collectedWebHookModel.find().select('+transactionDetails');
-        checkTxf.forEach((transaction) => {
-            if (transaction.transactionDetails && transaction.transactionDetails.data) {
-                const transactionRef = transaction.transactionDetails.data.tx_ref;
-                if (transactionRef === randomNum) {
-                    // regenrate random number
-                    randomNum = generateRandomNumber(30);
+            let randomNum = generateRandomNumber(30);
+            const checkTxf = await collectedWebHookModel.find().select('+transactionDetails');
+            checkTxf.forEach((transaction) => {
+                if (transaction.transactionDetails && transaction.transactionDetails.data) {
+                    const transactionRef = transaction.transactionDetails.data.tx_ref;
+                    if (transactionRef === randomNum) {
+                        randomNum = generateRandomNumber(30);
+                    }
+                }
+            });
+
+            const payload = {
+                email: user.email,
+                is_permanent: false,
+                tx_ref: randomNum,
+                amount: collectAmount,
+                narration: `${user.firstName} ${user.lastName} auto wash`,
+            };
+
+            const response = await flw.VirtualAcct.create(payload);
+            if (response && response.data) {
+                const { bank_name, account_number, created_at, expiry_date } = response.data;
+
+                const formatDateTime = (dateTime) => {
+                    const date = new Date(dateTime);
+                    return date.toLocaleString(); // Simplify format to just local date-time
+                };
+
+                const bank = {
+                    accountName: `${user.firstName} ${user.lastName}`,
+                    accountNumber: account_number,
+                    bankName: bank_name,
+                    createdAt: formatDateTime(created_at),
+                    expire_date: formatDateTime(expiry_date),
+                    tx_ref: randomNum,
+                    cAt: collectAmount,
+                    type: user.type == "none" ? "Get plan" : user.type == "third" && collectAmount > 100 ? "Upgrade plan" : user.type == "second" && collectAmount > 500 ? "Upgrade plan" : "Renew plan"
+                };
+
+                const updatedAccount = await registerSchema.findOneAndUpdate(
+                    { _id: userid },
+                    { $set: { uniqueAccNo: account_number } },
+                    { new: true }
+                );
+
+                if (updatedAccount) {
+                    return res.send({ message: "Account created Successfully", bank, status: true });
+                } else {
+                    return res.send({ message: "Account not created" });
                 }
             } else {
-                console.warn("Missing transaction details or data for transaction:", transaction);
+                console.error("Unexpected response from Flutterwave API:", response);
+                return res.status(500).json({ error: "Failed to create virtual account. Please try again later." });
             }
-        });
-        const payload = {
-            email: user.email,
-            is_permanent: false,
-            tx_ref: randomNum,
-            amount: collectAmount,
-            narration: `${user.firstName} ${user.lastName} auto wash`,
         };
 
-        const response = await flw.VirtualAcct.create(payload);
-        if (response && response.data) {
-            const { bank_name, account_number, created_at, expiry_date } = response.data;
+        const findTransaction = await collectedWebHookModel.find({ email: user.email });
 
-            const formatDateTime = (dateTime) => {
-                const date = new Date(dateTime);
-                let localDate = date.toLocaleString();
-                const hour = date.getHours();
-                if (hour > 12) {
-                    const formattedHour = hour + 1; // Add 1 if hour is greater than 12
-                    const ampm = "PM";
-                    localDate = `${formattedHour}:${(date.getMinutes() < 10 ? "0" : "") +
-                        date.getMinutes()} ${ampm}`;
+        if (findTransaction.length > 0) {
+            let today = new Date();
+
+            function isDateGreaterThanToday(inputDate) {
+                let givenDate = new Date(inputDate);
+                return givenDate > today;
+            }
+
+            for (let trsc of findTransaction) {
+                if (trsc.currently === true && isDateGreaterThanToday(trsc.dueDate)) {
+                    return res.send({
+                        msg: `You have an ongoing plan. Wait till ${trsc.dueDate} before you can renew or upgrade plan`
+                    });
                 }
-                return localDate;
-            };
+            }
 
-            const bank = {
-                accountName: user.firstName + " " + user.lastName,
-                accountNumber: account_number,
-                bankName: bank_name,
-                createdAt: formatDateTime(created_at),
-                expire_date: formatDateTime(expiry_date),
-                tx_ref: randomNum,
-                cAt: collectAmount,
-                type: user.type == "none" ? "Get plan" : user.type == "third" && collectAmount > 100 ? "Upgrade plan" : user.type == "second" && collectAmount > 500 ? "Upgrad plan" : "Renew plan"
-            };
-
-            registerSchema.findOneAndUpdate(
-                { _id: userid },
-                { $set: { uniqueAccNo: account_number } },
-                { new: true }
-            )
-                .then((accountSaved) => {
-                    if (accountSaved) {
-                        res.send({ message: "Account created Successfully", bank });
-                        const html = '<div style="box-shadow: 1px 1px 2px 2px #0e46a139; background-color:gray; margin: 20px; padding: 0px; border-radius: 5px;"><h5 style="border-bottom: 1px solid gray; font-size: 18px">Payment Notification</h5><h6 style="font-size: 15px;">This user, <span style="color: green; font-size: 17px;">' + user.firstName + ' ' + user.lastName + '</span> make a payment of <br /><span style="color: green; font-size: 17px;">₦ 100</span> <br />This user is now an eligible member with grade C</h6><button style="border: none; background-color: #0E47A1; color: white; border-radius: 5px; padding: 10px;">View payment</button></div>'
-                        // sendMessageToEmail()
-                        sendMessageToEmail(html, 'making4749@gmail.com', 'Payment Notification')
-                    } else {
-                        res.send({ message: "Account not created" });
-                    }
-                })
-                .catch(err => {
-                    console.log(err);
-                })
+            // If no ongoing plan is found, create a new account
+            await generateAcc();
         } else {
-            console.error("Unexpected response from Flutterwave API:", response);
-            return res.status(500).json({ error: "Failed to create virtual account. Please try again later." });
+            // No previous transactions, create a new account
+            await generateAcc();
         }
-        // const { bank_name, account_number, created_at, expiry_date } = response.data;
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: "An error occurred" });
+        return res.status(500).json({ error: "An error occurred" });
     }
 };
+
 
 const WebHook = async (req, res) => {
     try {
@@ -125,14 +135,14 @@ const WebHook = async (req, res) => {
             date.setDate(date.getDate() + 30);
             let formattedDate = date.toISOString().split('T')[0];
             return formattedDate
-          }
+        }
         const transaction = new collectedWebHookModel({
             transactionDetails: eventData,
-            resolve:false,
-            email:eventData.data.customer.email,
-            paymentType:"none",
+            resolve: false,
+            email: eventData.data.customer.email,
+            paymentType: "none",
             dueDate: dueDate(eventData.data.created_at.slice(0, 10)),
-            currently:false,
+            currently: false,
         });
 
         transaction.save().then((result) => {
@@ -208,18 +218,18 @@ const verifyUserpayment = async (req, res) => {
 };
 
 
-const userPayment=async(req, res)=>{
-    const {userId} =  req.body
+const userPayment = async (req, res) => {
+    const { userId } = req.body
 
-    const user = await registerSchema.findOne({_id:userId})
+    const user = await registerSchema.findOne({ _id: userId })
     const email = user.email
 
-    const UserPayment = await collectedWebHookModel.find({email:email}).select('+transactionDetails')
+    const UserPayment = await collectedWebHookModel.find({ email: email }).select('+transactionDetails')
 
-    if(UserPayment.length>0){
-        res.send({status:true, paymentHistory:UserPayment})
-    }else{
-        res.send({status:false, paymentHistory:[]})
+    if (UserPayment.length > 0) {
+        res.send({ status: true, paymentHistory: UserPayment })
+    } else {
+        res.send({ status: false, paymentHistory: [] })
     }
 }
 
