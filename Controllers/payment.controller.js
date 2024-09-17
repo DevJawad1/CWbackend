@@ -132,7 +132,7 @@ const WebHook = async (req, res) => {
             email:eventData.data.customer.email,
             paymentType:"none",
             dueDate: dueDate(eventData.data.created_at.slice(0, 10)),
-            currently:true
+            currently:false,
         });
 
         transaction.save().then((result) => {
@@ -151,13 +151,15 @@ const verifyUserpayment = async (req, res) => {
     const { tx_ref, userid } = req.body;
     console.log(tx_ref);
 
+    const user = await registerSchema.findOne({_id:userid})
+    const usermail = user.email
     try {
-        const webhooks = await collectedWebHookModel.find().select('+transactionDetails');
+        const webhooks = await collectedWebHookModel.find({email:usermail}).select('+transactionDetails');
         let paymentConfirmed = false;
 
         for (const eachwebhook of webhooks) {
             const data = eachwebhook.transactionDetails?.data;
-
+            eachwebhook.currently = false;
             if (data && data.tx_ref === tx_ref) {
                 const payer = data.customer.email;
                 const amount = data.amount;
@@ -178,7 +180,9 @@ const verifyUserpayment = async (req, res) => {
 
                 eachwebhook.paymentType = eventType;
                 eachwebhook.resolve=true
+                eachwebhook.currently=true
                 await eachwebhook.save();
+
                 const userUpdate = await registerSchema.findOneAndUpdate(
                     { email: payer },
                     { $set: { membership: true, type: amount === 100 ? "third" : amount === 500 ? "second" : "first" } },
