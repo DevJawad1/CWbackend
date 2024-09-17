@@ -51,13 +51,38 @@ const codeHandler = async (req, res) => {
 
 const verifyOtp=async(req, res)=>{
     const {email, otp, type } = req.body
-
-    const findOtp = await codeTable.findOne({email, type})
+    console.log(req.body)
+    const findOtp = await codeTable.findOne({user:email, type})
     if(findOtp){
         let validOtp = await findOtp.compareCode(otp.toString())
+        if(validOtp){
+            res.send({msg:"Valid OTP, proceed to reset your password", status:true})
+            const findType = await codeTable.findOneAndDelete({user:email, type})
 
+        }else{
+            res.send({msg:"Invalid OTP", status:false})
+        }
+    }else{
+        res.send({msg:"OTP not found", status:false})
+    }
+}
+
+
+const newPassword = async(req, res)=>{
+    const {email, ps1} = req.body
+    const user= await allUser.findOne({email})
+    if(user){
+        user.password=ps1
+        user.save().then((newuser)=>{
+            if(newuser){
+                res.send({msg:"Password change successfully", status:true})
+            }
+        }).catch((err)=>{
+            res.send({msg:"Error while reseting password", status:false})
+        })
+    }else{
+        res.send({msg:"Error while reseting password", status:false})
     }
 
 }
-
-module.exports = { codeHandler, verifyOtp };
+module.exports = { codeHandler, verifyOtp, newPassword };
