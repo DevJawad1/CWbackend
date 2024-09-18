@@ -21,6 +21,7 @@ const saveBookCar = async(req, res)=>{
             return savecar.save();
         })
     
+        console.log(promises)
     
         Promise.all(promises)
         .then((savedCars) => {
